@@ -1,0 +1,80 @@
+name: Buddha Noti
+
+on:
+  schedule:
+    # 05:30 ICT = 22:30 UTC (วันก่อนหน้า)
+    - cron: "30 22 * * *"
+    # 20:00 ICT = 13:00 UTC
+    - cron: "0 13 * * *"
+
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Notification mode"
+        required: true
+        type: choice
+        options:
+          - morning
+          - evening
+      dry_run:
+        description: "Dry run (no LINE message sent)"
+        required: false
+        type: boolean
+        default: true
+      date_override:
+        description: "Override date (YYYY-MM-DD) for testing"
+        required: false
+        type: string
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+            echo "dry_run=${{ inputs.dry_run }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "30 22 * * *" ]; then
+            echo "mode=morning" >> $GITHUB_OUTPUT
+            echo "dry_run=false" >> $GITHUB_OUTPUT
+          else
+            echo "mode=evening" >> $GITHUB_OUTPUT
+            echo "dry_run=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run notification
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL || 'anthropic/claude-sonnet-4.5' }}
+          DATE_OVERRIDE: ${{ inputs.date_override }}
+        run: |
+          DRY_FLAG="--no-dry-run"
+          if [ "${{ steps.mode.outputs.dry_run }}" = "true" ]; then
+            DRY_FLAG="--dry-run"
+          fi
+          python src/main.py --mode ${{ steps.mode.outputs.mode }} $DRY_FLAG
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 7
