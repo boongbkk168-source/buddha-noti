@@ -32,3 +32,6 @@ htmlcov/
 
 # Dry-run logs
 logs/
+
+# Local MCP config (per-machine)
+.mcp.json

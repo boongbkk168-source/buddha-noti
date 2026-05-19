@@ -1,0 +1,20 @@
+{
+  "_comment": "Local config สำหรับเชื่อม Hermes MCP (gitignored)",
+  "_requirements": [
+    "Hermes Agent v0.14+ ติดตั้งใน WSL Ubuntu",
+    "Hermes login provider แล้ว (เช่น Grok OAuth)",
+    "~/.hushlogin ใน WSL เพื่อกัน MOTD รบกวน stdio",
+    "Windows: wsl.exe เปิดใช้งานได้ปกติ"
+  ],
+  "_test_bridge": "wsl -e bash -lc \"hermes --version\"",
+  "_hermes_path": "/home/administrator/.local/bin/hermes",
+  "mcpServers": {
+    "hermes": {
+      "command": "wsl",
+      "args": [
+        "-e", "bash", "-lc",
+        "hermes mcp serve --accept-hooks"
+      ]
+    }
+  }
+}
