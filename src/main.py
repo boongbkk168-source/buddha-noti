@@ -58,7 +58,9 @@ def main():
         print(json.dumps(result, ensure_ascii=False, indent=2))
         sys.exit(0)
     except Exception as e:
+        import traceback
         logging.getLogger(__name__).error("Fatal: %s", e)
+        traceback.print_exc()
         sys.exit(1)
 
 
