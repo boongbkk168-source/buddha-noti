@@ -59,6 +59,7 @@ jobs:
 
       - name: Run notification
         env:
+          PYTHONIOENCODING: utf-8
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}

@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -12,6 +13,12 @@ if str(PROJECT_ROOT) not in sys.path:
 from dotenv import load_dotenv
 
 load_dotenv(PROJECT_ROOT / ".env")
+
+# Ensure UTF-8 output on Linux CI (default may be ASCII)
+if sys.stdout.encoding != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8")
+if sys.stderr.encoding != "utf-8":
+    sys.stderr.reconfigure(encoding="utf-8")
 
 logging.basicConfig(
     level=logging.INFO,
