@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 
-from src.line_sender import LineSendError, send
+from src.line_sender import LineSendError, _build_image_url, send
 
 
 def _mock_response(status_code=200, headers=None, json_body=None):
@@ -141,3 +141,81 @@ class TestRealSend:
     def test_missing_token_raises(self):
         with pytest.raises(LineSendError, match="TOKEN not set"):
             send("ข้อความ", dry_run=False)
+
+
+class TestImageSupport:
+
+    @patch.dict(os.environ, _ENV)
+    @patch("src.line_sender.requests.post")
+    def test_send_with_image(self, mock_post):
+        """body ต้องมี 2 messages: text + image"""
+        mock_post.return_value = _mock_response(
+            200, headers={"x-line-request-id": "req-img-ok"}
+        )
+        result = send(
+            "วันนี้วันพระค่ะ",
+            image_path="assets/images/red_buddha.png",
+            dry_run=False,
+        )
+        assert result["status"] == "sent"
+
+        call_kwargs = mock_post.call_args
+        body = call_kwargs.kwargs.get("json") or call_kwargs[1].get("json")
+        messages = body["messages"]
+        assert len(messages) == 2
+        assert messages[0]["type"] == "text"
+        assert messages[1]["type"] == "image"
+        assert "originalContentUrl" in messages[1]
+        assert "previewImageUrl" in messages[1]
+        assert messages[1]["originalContentUrl"].endswith("red_buddha.png")
+
+    @patch.dict(os.environ, _ENV)
+    @patch("src.line_sender.requests.post")
+    def test_send_without_image(self, mock_post):
+        """body ต้องมี 1 message: text only"""
+        mock_post.return_value = _mock_response(
+            200, headers={"x-line-request-id": "req-txt-ok"}
+        )
+        result = send("วันนี้วันพระค่ะ", dry_run=False)
+        assert result["status"] == "sent"
+
+        call_kwargs = mock_post.call_args
+        body = call_kwargs.kwargs.get("json") or call_kwargs[1].get("json")
+        messages = body["messages"]
+        assert len(messages) == 1
+        assert messages[0]["type"] == "text"
+
+    @patch.dict(os.environ, {
+        "GITHUB_REPO": "myuser/myrepo",
+        "GITHUB_BRANCH": "dev",
+    })
+    def test_build_image_url(self):
+        """URL format ต้องถูก: raw.githubusercontent.com/{repo}/{branch}/assets/images/{file}"""
+        url = _build_image_url("some/path/red_buddha.png")
+        assert url == (
+            "https://raw.githubusercontent.com/"
+            "myuser/myrepo/dev/assets/images/red_buddha.png"
+        )
+
+    def test_build_image_url_defaults(self):
+        """ถ้าไม่ set env ต้องใช้ default repo/branch"""
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("GITHUB_REPO", "GITHUB_BRANCH")}
+        with patch.dict(os.environ, env, clear=True):
+            url = _build_image_url("blue_kone.png")
+        assert "boongbkk168-source/buddha-noti" in url
+        assert "/main/" in url
+        assert url.endswith("blue_kone.png")
+
+    def test_dry_run_logs_image_url(self, tmp_path):
+        """dry-run log file ต้องมี image_url field"""
+        with patch("src.line_sender.LOGS_DIR", tmp_path):
+            result = send(
+                "ข้อความ",
+                image_path="assets/images/green_buddha.png",
+                dry_run=True,
+            )
+        data = json.loads(open(result["log_path"], encoding="utf-8").read())
+        assert "image_url" in data
+        assert data["image_url"].endswith("green_buddha.png")
+        assert "raw.githubusercontent.com" in data["image_url"]

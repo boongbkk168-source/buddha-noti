@@ -32,6 +32,17 @@ def _mask_group_id() -> str:
     return "****" + gid[-4:]
 
 
+def _build_image_url(image_path: str) -> str:
+    """Convert local path to GitHub raw URL for LINE to fetch."""
+    repo = os.environ.get("GITHUB_REPO", "boongbkk168-source/buddha-noti")
+    branch = os.environ.get("GITHUB_BRANCH", "main")
+    filename = os.path.basename(image_path)
+    return (
+        f"https://raw.githubusercontent.com/"
+        f"{repo}/{branch}/assets/images/{filename}"
+    )
+
+
 def _parse_error_detail(resp: requests.Response) -> str:
     try:
         return resp.json().get("message", resp.text)
@@ -39,7 +50,7 @@ def _parse_error_detail(resp: requests.Response) -> str:
         return resp.text or str(resp.status_code)
 
 
-def _send_push(message: str) -> dict:
+def _send_push(message: str, image_path: str | None = None) -> dict:
     token = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN", "")
     group_id = os.environ.get("LINE_GROUP_ID", "")
 
@@ -52,13 +63,21 @@ def _send_push(message: str) -> dict:
         "Content-Type": "application/json",
         "Authorization": f"Bearer {token}",
     }
-    payload = {
-        "to": group_id,
-        "messages": [{"type": "text", "text": message}],
-    }
+
+    messages = [{"type": "text", "text": message}]
+    if image_path:
+        image_url = _build_image_url(image_path)
+        messages.append({
+            "type": "image",
+            "originalContentUrl": image_url,
+            "previewImageUrl": image_url,
+        })
+        logger.info("Image attached: %s", image_url)
+
+    payload = {"to": group_id, "messages": messages}
 
     masked_gid = _mask_group_id()
-    logger.info("Sending push: group=%s, length=%d", masked_gid, len(message))
+    logger.info("Sending push: group=%s, length=%d, has_image=%s", masked_gid, len(message), bool(image_path))
 
     last_error = None
     for attempt in range(1 + MAX_RETRIES):
@@ -104,8 +123,7 @@ def send(
     dry_run: bool = True,
 ) -> dict:
     if not dry_run:
-        # TODO Phase 3.2: แนบรูปภาพ (image_path)
-        return _send_push(message)
+        return _send_push(message, image_path)
 
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -113,10 +131,13 @@ def send(
     rand = "".join(random.choices(string.ascii_lowercase + string.digits, k=6))
     filename = f"dry_run_{now.strftime('%Y%m%d_%H%M%S')}_{rand}.json"
 
+    image_url = _build_image_url(image_path) if image_path else None
+
     log_data = {
         "timestamp_iso": now.isoformat(),
         "message": message,
         "image_path": image_path,
+        "image_url": image_url,
         "target_group_id_masked": _mask_group_id(),
         "dry_run": True,
     }

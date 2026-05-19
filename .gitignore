@@ -32,6 +32,3 @@ htmlcov/
 
 # Dry-run logs
 logs/
-
-# Generated placeholder images
-assets/images/*.png
