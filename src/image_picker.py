@@ -1,5 +1,6 @@
 """Image Picker: เลือก/สร้างรูปภาพตามสีมงคล"""
 
+import os
 import platform
 from pathlib import Path
 
@@ -128,7 +129,14 @@ def pick(weekday_color: str, notification_type: str, base_dir: Path | None = Non
 
     Returns:
         absolute path ไปยังไฟล์รูปภาพ
+
+    Note:
+        ถ้า env IMAGE_OVERRIDE ถูกตั้งค่า จะคืน path นั้นทันที (สำหรับ testing)
     """
+    override = os.environ.get("IMAGE_OVERRIDE")
+    if override:
+        return str(Path(override).resolve())
+
     if base_dir is None:
         base_dir = ASSETS_DIR
 

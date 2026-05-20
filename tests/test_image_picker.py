@@ -1,6 +1,8 @@
 """Tests for image_picker module."""
 
+import os
 from pathlib import Path
+from unittest.mock import patch
 
 from src.image_picker import pick, COLOR_KEY_MAP, TYPE_KEY
 
@@ -37,3 +39,16 @@ class TestPick:
         for color in COLOR_KEY_MAP:
             result = pick(color, "buddha_day", base_dir=tmp_path)
             assert Path(result).exists()
+
+    def test_image_override_env(self, tmp_path):
+        override = tmp_path / "custom.png"
+        override.write_bytes(b"fake")
+        with patch.dict(os.environ, {"IMAGE_OVERRIDE": str(override)}):
+            result = pick("แดง", "buddha_day", base_dir=tmp_path)
+        assert result == str(override.resolve())
+
+    def test_no_override_uses_normal_mapping(self, tmp_path):
+        env = {k: v for k, v in os.environ.items() if k != "IMAGE_OVERRIDE"}
+        with patch.dict(os.environ, env, clear=True):
+            result = pick("แดง", "buddha_day", base_dir=tmp_path)
+        assert "red_buddha.png" in result
