@@ -1,4 +1,4 @@
-"""Image Picker: เลือกรูป artwork ตามประเภทแจ้งเตือน (สุ่ม variation A/B)"""
+"""Image Picker: เลือกรูป artwork ตามสีมงคลประจำวัน (สุ่ม variation A/B)"""
 
 import os
 import random
@@ -6,12 +6,18 @@ from pathlib import Path
 
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets" / "images"
 
-# แต่ละ notification_type มี 2 variations — สุ่มเลือกเพื่อความหลากหลาย
-VARIATIONS = {
-    "buddha_day": ["buddha_day_a.png", "buddha_day_b.png"],
-    "buddha_eve": ["buddha_eve_a.png", "buddha_eve_b.png"],
-    "kone_eve": ["kone_eve_a.png", "kone_eve_b.png"],
+# สีมงคล (ไทย) -> ชื่อไฟล์ (อังกฤษ)
+COLOR_KEY = {
+    "แดง": "red",
+    "เหลือง": "yellow",
+    "ชมพู": "pink",
+    "เขียว": "green",
+    "ส้ม": "orange",
+    "ฟ้า": "blue",
+    "ม่วง": "purple",
 }
+
+VARIATIONS = ["a", "b"]
 
 
 def pick(
@@ -19,11 +25,12 @@ def pick(
     notification_type: str,
     base_dir: Path | None = None,
 ) -> str:
-    """เลือกรูป artwork ตามประเภทแจ้งเตือน (สุ่ม variation A หรือ B)
+    """เลือกรูป artwork ตามสีมงคลประจำวัน (สุ่ม variation A หรือ B)
 
     Args:
-        weekday_color: สีมงคลประจำวัน (คงไว้เพื่อ backward compatibility — ไม่ใช้แล้ว)
-        notification_type: "buddha_day" | "buddha_eve" | "kone_eve"
+        weekday_color: สีมงคลประจำวัน (แดง/เหลือง/ชมพู/เขียว/ส้ม/ฟ้า/ม่วง)
+        notification_type: ประเภทแจ้งเตือน (คงไว้เพื่อ backward compatibility —
+            ไม่ใช้แล้ว เพราะรูปไม่มีข้อความ จึงใช้ได้กับทุกประเภท)
         base_dir: override assets directory (สำหรับ testing)
 
     Returns:
@@ -39,6 +46,7 @@ def pick(
     if base_dir is None:
         base_dir = ASSETS_DIR
 
-    choices = VARIATIONS.get(notification_type, VARIATIONS["buddha_day"])
-    filename = random.choice(choices)
+    color_en = COLOR_KEY.get(weekday_color, "yellow")
+    variation = random.choice(VARIATIONS)
+    filename = f"{color_en}_{variation}.png"
     return str((base_dir / filename).resolve())
