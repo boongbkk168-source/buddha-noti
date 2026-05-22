@@ -28,7 +28,7 @@ class TestPick:
         assert Path(result).name in {"yellow_a.png", "yellow_b.png"}
 
     def test_notification_type_does_not_affect_choice(self):
-        for ntype in ("buddha_day", "buddha_eve", "kone_eve"):
+        for ntype in ("buddha_day", "buddha_eve"):
             result = pick("ฟ้า", ntype)
             assert Path(result).name in {"blue_a.png", "blue_b.png"}
 

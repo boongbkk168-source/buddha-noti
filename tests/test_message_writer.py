@@ -52,14 +52,6 @@ class TestNotificationTypes:
         result = write("buddha_eve", "sunday", "แดง", "2025-01-05")
         assert result.startswith("พรุ่งนี้วันพระค่ะ")
 
-    @patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"})
-    @patch("src.message_writer.openai.OpenAI")
-    def test_kone_eve(self, mock_cls):
-        text = _make_valid_text("kone_eve")
-        mock_cls.return_value.chat.completions.create.return_value = _mock_completion(text)
-        result = write("kone_eve", "saturday", "ม่วง", "2025-01-04")
-        assert result.startswith("พรุ่งนี้วันโกนค่ะ")
-
 
 class TestValidation:
 
@@ -135,7 +127,7 @@ class TestRetryAndFallback:
         assert mock_client.chat.completions.create.call_count == 1
 
     def test_fallback_passes_validation(self):
-        for ntype in ["kone_eve", "buddha_eve", "buddha_day"]:
+        for ntype in ["buddha_eve", "buddha_day"]:
             text = _fallback(ntype, "เหลือง")
             assert _validate(text, ntype, "เหลือง") is True
 

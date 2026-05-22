@@ -10,13 +10,11 @@ import openai
 logger = logging.getLogger(__name__)
 
 PREFIXES = {
-    "kone_eve": "พรุ่งนี้วันโกนค่ะ",
     "buddha_eve": "พรุ่งนี้วันพระค่ะ",
     "buddha_day": "วันนี้วันพระค่ะ",
 }
 
 TYPE_DESCRIPTIONS = {
-    "kone_eve": "ก่อนวันโกน (2 วันก่อนวันพระ)",
     "buddha_eve": "ก่อนวันพระ (วันโกน)",
     "buddha_day": "วันพระ",
 }
@@ -32,14 +30,12 @@ WEEKDAY_THAI = {
 }
 
 FALLBACK_TEMPLATES = {
-    "kone_eve": "พรุ่งนี้วันโกนค่ะ 🌸\nสีมงคลวันนี้คือสี{color} ✨\nเตรียมตัวทำบุญกันนะคะ 🙏\nขอให้มีความสุขค่ะ",
     "buddha_eve": "พรุ่งนี้วันพระค่ะ 🪷\nสีมงคลวันนี้คือสี{color} ✨\nเตรียมใจใส่บุญกันค่ะ 🙏\nสาธุค่ะ",
     "buddha_day": "วันนี้วันพระค่ะ 🙏\nสีมงคลวันนี้คือสี{color} ☀️\nทำบุญ ตักบาตร รักษาศีลกันนะคะ 🪷\nขอบุญรักษาค่ะ",
 }
 
 # emoji น่ารักแนะนำตาม notification_type
 EMOJI_HINTS = {
-    "kone_eve": "🌸 🪷 ✨ 💐",
     "buddha_eve": "🪷 🕯️ ✨ 🌙",
     "buddha_day": "🙏 🪷 ☀️ 🏵️",
 }
@@ -162,7 +158,7 @@ def write(
     """Generate ข้อความแจ้งเตือนวันพระ
 
     Args:
-        notification_type: "kone_eve" | "buddha_eve" | "buddha_day"
+        notification_type: "buddha_eve" | "buddha_day"
         weekday: "monday" ... "sunday"
         weekday_color: สีมงคลประจำวัน
         date_iso: "2025-01-06"

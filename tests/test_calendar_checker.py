@@ -18,10 +18,6 @@ class TestNotificationType:
         assert result["notification_type"] == "buddha_eve"
         assert result["tomorrow"]["is_buddha_day"] is True
 
-    def test_kone_eve(self, kone_eve):
-        result = check(kone_eve)
-        assert result["notification_type"] == "kone_eve"
-
     def test_normal_day(self, normal_day):
         result = check(normal_day)
         assert result["notification_type"] is None

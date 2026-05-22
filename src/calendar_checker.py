@@ -98,8 +98,6 @@ def check(target_date: date | None = None) -> dict:
         notification_type = "buddha_day"
     elif tomorrow_is_buddha:
         notification_type = "buddha_eve"
-    elif day_after in buddha_set:
-        notification_type = "kone_eve"
     else:
         notification_type = None
 

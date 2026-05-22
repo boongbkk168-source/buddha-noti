@@ -17,12 +17,6 @@ def kone_day():
 
 
 @pytest.fixture
-def kone_eve():
-    """2 วันก่อนวันพระ: 2025-01-04 (เสาร์)"""
-    return date(2025, 1, 4)
-
-
-@pytest.fixture
 def normal_day():
     """วันธรรมดา: ไม่เข้าเงื่อนไขใดเลย"""
     return date(2025, 1, 8)

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 MODE_ALLOWED_TYPES = {
     "morning": ["buddha_day"],
-    "evening": ["buddha_eve", "kone_eve"],
+    "evening": ["buddha_eve"],
 }
 
 

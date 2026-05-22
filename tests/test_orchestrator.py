@@ -50,17 +50,6 @@ class TestModeMapping:
         assert result["status"] == "dry_run"
         assert result["notification_type"] == "buddha_eve"
 
-    @patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"})
-    @patch("src.orchestrator.line_sender.send", return_value={"status": "dry_run", "log_path": "/tmp/test.json"})
-    @patch("src.orchestrator.image_picker.pick", return_value="/tmp/test.png")
-    @patch("src.orchestrator.message_writer.write", return_value="พรุ่งนี้วันโกนค่ะ\nสีม่วง\nสาธุค่ะ")
-    @patch("src.orchestrator.calendar_checker.check")
-    def test_kone_eve_evening_sent(self, mock_cal, mock_write, mock_img, mock_send):
-        mock_cal.return_value = _mock_calendar("kone_eve", weekday="saturday", color="ม่วง", date_iso="2025-01-04")
-        result = run("evening", dry_run=True)
-        assert result["status"] == "dry_run"
-        assert result["notification_type"] == "kone_eve"
-
     @patch("src.orchestrator.calendar_checker.check")
     def test_no_notification_skipped(self, mock_cal):
         mock_cal.return_value = _mock_calendar(None, date_iso="2025-01-08")
