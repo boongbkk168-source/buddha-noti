@@ -1,11 +1,13 @@
 name: Buddha Noti
 
 on:
-  schedule:
-    # 05:30 ICT = 22:30 UTC (วันก่อนหน้า)
-    - cron: "30 22 * * *"
-    # 20:00 ICT = 13:00 UTC
-    - cron: "0 13 * * *"
+  # GitHub Actions cron disabled — free-tier schedules fire 6-12h late.
+  # Notifications are triggered by external scheduler (cron-job.org) calling
+  # the workflow_dispatch API on time (±1 min). See README.
+  # To restore native GitHub cron, uncomment the schedule block below.
+  # schedule:
+  #   - cron: "30 22 * * *"   # 05:30 ICT next day
+  #   - cron: "0 13 * * *"    # 20:00 ICT same day
 
   workflow_dispatch:
     inputs:
